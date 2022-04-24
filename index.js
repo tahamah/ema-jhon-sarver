@@ -9,7 +9,8 @@ app.use(cors())
 app.use(express.json())
 
 //connect
-const { MongoClient, ServerApiVersion } = require('mongodb')
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.b4usj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
 const client = new MongoClient(uri, {
     useNewUrlParser: true,
@@ -40,6 +41,17 @@ async function run() {
         app.get('/productCount', async (req, res) => {
             const count = await productCollection.estimatedDocumentCount()
             res.send({ count })
+        })
+        //app post to get product by id
+        app.post('/productByKeys', async (req, res) => {
+            console.log('object')
+            const keys = req.body
+            const ids = keys.map((id) => ObjectId(id))
+            const query = { _id: { $in: ids } }
+            const cursor = productCollection.find(query)
+            const products = await cursor.toArray()
+            res.send(products)
+            console.log(keys)
         })
     } finally {
         //
